@@ -10,7 +10,7 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $category = CategoryDB::select('id', 'name')->get();
+        $category = Category::select('id', 'name')->get();
         return $category;
     }
 }

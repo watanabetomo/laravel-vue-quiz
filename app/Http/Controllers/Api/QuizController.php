@@ -16,7 +16,6 @@ class QuizController extends Controller
         } else {
             return [];
         }
-
         $quiz = Quiz::with(['answer', 'category'])
             ->wherein('quizzes.categories_id', $category)
             ->inRandomOrder()

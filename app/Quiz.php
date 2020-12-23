@@ -3,6 +3,8 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Answer;
+use App\Category;
 
 class Quiz extends Model
 {
