@@ -6,14 +6,14 @@
                     <div class="col-md-8 col-md-offset-2">
                         <div class="panel panel-default">
                             <div class="panel-heading text-center">
-                                ユーザー登録
+                                ログイン
                             </div>
                             <div
                                 class="form-group has-error"
                                 v-if="errors.length !== 0"
                             >
                                 <div class="alert alert-danger text-center">
-                                    ユーザー登録実行時にエラーが発生しました
+                                    ログイン時にエラーが発生しました
                                     <div
                                         v-for="(error, key, index) in errors"
                                         :key="index"
@@ -26,11 +26,10 @@
                                 <ValidationObserver
                                     class="form-horizontal"
                                     ref="observer"
-                                    action="/register"
-                                    id="register"
+                                    action="/login"
+                                    id="login"
                                     method="post"
                                     tag="form"
-                                    @submit.prevent="register()"
                                     v-slot="{ invalid }"
                                 >
                                     <input
@@ -38,34 +37,6 @@
                                         name="_token"
                                         :value="csrf"
                                     />
-                                    <div class="form-group">
-                                        <label
-                                            for="name"
-                                            class="col-md-4 control-label"
-                                            >名前</label
-                                        >
-
-                                        <div class="col-md-6">
-                                            <validation-provider
-                                                name="名前"
-                                                rules="required|max:20"
-                                                v-slot="{ errors }"
-                                            >
-                                                <input
-                                                    v-model="name"
-                                                    name="name"
-                                                    type="text"
-                                                    class="form-control"
-                                                />
-                                                <div
-                                                    class="alert alert-danger"
-                                                    v-show="errors[0]"
-                                                >
-                                                    {{ errors[0] }}
-                                                </div>
-                                            </validation-provider>
-                                        </div>
-                                    </div>
 
                                     <div class="form-group">
                                         <label
@@ -73,7 +44,6 @@
                                             class="col-md-4 control-label"
                                             >メールアドレス</label
                                         >
-
                                         <div class="col-md-6">
                                             <validation-provider
                                                 name="メールアドレス"
@@ -102,11 +72,10 @@
                                             class="col-md-4 control-label"
                                             >パスワード</label
                                         >
-
                                         <div class="col-md-6">
                                             <validation-provider
                                                 name="パスワード"
-                                                rules="required|min:8|confirmed:password_confirmation"
+                                                rules="required"
                                                 v-slot="{ errors }"
                                             >
                                                 <input
@@ -126,45 +95,31 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label
-                                            for="password-confirm"
-                                            class="col-md-4 control-label"
-                                            >パスワード再確認</label
-                                        >
-
-                                        <div class="col-md-6">
-                                            <validation-provider
-                                                name="パスワード再確認"
-                                                rules="required|min:8"
-                                                vid="password_confirmation"
-                                                v-slot="{ errors }"
-                                            >
-                                                <input
-                                                    v-model="
-                                                        password_confirmation
-                                                    "
-                                                    name="password_confirmation"
-                                                    type="password"
-                                                    class="form-control"
-                                                />
-                                                <div
-                                                    class="alert alert-danger"
-                                                    v-show="errors[0]"
-                                                >
-                                                    {{ errors[0] }}
-                                                </div>
-                                            </validation-provider>
+                                        <div class="col-md-6 col-md-offset-4">
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input
+                                                        type="checkbox"
+                                                        name="remember"
+                                                    />
+                                                    ログインを継続する
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
 
                                     <div class="form-group">
-                                        <div class="col-md-6 col-md-offset-4">
+                                        <div class="col-md-8 col-md-offset-4">
                                             <button
                                                 type="submit"
                                                 class="btn btn-primary"
                                             >
-                                                登録
+                                                ログイン
                                             </button>
+
+                                            <a class="btn btn-link" href
+                                                >パスワードをお忘れですか?</a
+                                            >
                                         </div>
                                     </div>
                                 </ValidationObserver>
@@ -179,7 +134,7 @@
 
 <script>
 import { ValidationProvider, ValidationObserver, extend } from "vee-validate";
-import { required, max, min, email, confirmed } from "vee-validate/dist/rules";
+import { required, email } from "vee-validate/dist/rules";
 extend("required", {
     ...required,
     message: "{_field_}は必須です"
@@ -188,18 +143,6 @@ extend("email", {
     ...email,
     message: "{_field_}はメールアドレス形式で入力してください"
 });
-extend("min", {
-    ...min,
-    message: "{_field_}は最低でも{length}文字入力してください"
-});
-extend("max", {
-    ...max,
-    message: "{_field_}は最大でも{length}文字までです"
-});
-extend("confirmed", {
-    ...confirmed,
-    message: "再確認パスワードと入力が一致していません"
-});
 export default {
     components: {
         ValidationProvider,
@@ -207,10 +150,8 @@ export default {
     },
     data() {
         return {
-            name: "",
             email: "",
             password: "",
-            password_confirmation: "",
             csrf: document
                 .querySelector('meta[name="csrf-token"]')
                 .getAttribute("content")
@@ -222,10 +163,10 @@ export default {
         }
     },
     methods: {
-        async register() {
+        async login() {
             const isValid = await this.$refs.observer.validate();
             if (isValid) {
-                document.querySelector("#register").submit();
+                document.querySelector("#login").submit();
             }
         }
     }
