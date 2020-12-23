@@ -2286,6 +2286,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 
 
 
@@ -2320,13 +2321,57 @@ __webpack_require__.r(__webpack_exports__);
     var _this = this;
 
     var categories = this.$route.query.categories;
-    console.log(categories);
     this.$http.get("/api/quiz?categories=".concat(categories)).then(function (response) {
       _this.quizData = response.data;
+
+      _this.findNextQuiz(0);
+
       console.log(_this.quizData);
     });
   },
   methods: {
+    goAnswer: function goAnswer(selectAnswerNum) {
+      if (selectAnswerNum === 0) {
+        // selectAnswerNumが0の場合は、click 「正解を表示する」ボタンのクリック alert-info、alert-dangerを非表示
+        this.isCorrect = false;
+        this.isMistake = false;
+      } else if (selectAnswerNum === Number(this.correctAnswerNo)) {
+        // 正解を押した場合 alert-infoを表示し、alert-dangerを非表示にする そしてスコアを加算する
+        this.isCorrect = true;
+        this.isMistake = false;
+        this.score += 1;
+      } else {
+        // 不正解の場合 alert-infoを非表示し、alert-dangerを表示にする
+        this.isMistake = true;
+        this.isCorrect = false;
+      } // 回答済みの設定をONにする 同じ問題に２回以上の回答をさせないため、そして解説を表示するため
+
+
+      this.isAlreadyAnswered = true; // 10問以上回答している場合は、クイズを終了
+
+      if (this.quizNumber >= 10) {
+        this.endQuiz();
+      }
+    },
+    goNextQuiz: function goNextQuiz() {
+      // 次の問題へをクリック
+      if (this.quizNumber >= 10) {
+        // 10問以上の場合はクイズを終了
+        this.endQuiz();
+      } else {
+        // 次のクイズを表示し、クイズ番号を加算、alert-info、alert-danger、解説を非表示にする
+        this.findNextQuiz(this.quizNumber);
+        this.quizNumber += 1;
+        this.isCorrect = false;
+        this.isMistake = false;
+        this.isAlreadyAnswered = false;
+      }
+    },
+    endQuiz: function endQuiz() {
+      this.isQuizFinish = true;
+      this.answerNo = "-";
+      this.isAlreadyAnswered = true;
+    },
     findNextQuiz: function findNextQuiz(quizNumber) {
       this.title = this.quizData[quizNumber].title;
       this.answers = [this.quizData[quizNumber].answer.answer_1, this.quizData[quizNumber].answer.answer_2, this.quizData[quizNumber].answer.answer_3, this.quizData[quizNumber].answer.answer_4];
@@ -41622,7 +41667,7 @@ var render = function() {
                 _c("h2", { staticClass: "quiz-question-h2" }, [
                   _c("img", {
                     staticClass: "quiz-question__logo",
-                    attrs: { src: "images/what-is-mark.png" }
+                    attrs: { src: "/images/what-is-mark.png" }
                   }),
                   _vm._v(
                     "\n                        第" +
@@ -41654,7 +41699,7 @@ var render = function() {
                           _c(
                             "button",
                             {
-                              attrs: { disabled: _vm.isAnswerNotAlready },
+                              attrs: { disabled: _vm.isAlreadyAnswered },
                               on: {
                                 click: function($event) {
                                   return _vm.goAnswer(index + 1)
@@ -41671,7 +41716,7 @@ var render = function() {
                           )
                         ]),
                         _vm._v(
-                          "\n                                @" +
+                          "\n                                " +
                             _vm._s(answer) +
                             "\n                            "
                         )
@@ -41861,7 +41906,7 @@ var staticRenderFns = [
     return _c("h2", { staticClass: "quiz-correct-h2" }, [
       _c("img", {
         staticClass: "quiz-correct__logo",
-        attrs: { src: "images/correct-mark.png" }
+        attrs: { src: "/images/correct-mark.png" }
       }),
       _vm._v("正解\n                    ")
     ])
