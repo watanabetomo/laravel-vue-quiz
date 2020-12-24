@@ -99,25 +99,25 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   "extends": vue_chartjs__WEBPACK_IMPORTED_MODULE_0__["Bar"],
-  mounted: function mounted() {
-    this.renderChart({
-      labels: ["タ・ナカ", "Suzuki", "Saito", "Moriyama", "アオキ", "村町"],
-      datasets: [{
-        label: "最高得点率",
-        backgroundColor: "rgba(0, 170, 248, 0.47)",
-        data: [100, 90, 80, 70, 60, 50]
-      }]
-    }, {
-      scales: {
-        yAxes: [{
-          ticks: {
-            beginAtZero: true,
-            min: 0,
-            max: 100
-          }
-        }]
-      }
-    });
+  props: {
+    chartData: {
+      type: Object
+    }
+  },
+  methods: {
+    renderBarChart: function renderBarChart() {
+      this.renderChart(this.chartData, {
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true,
+              min: 0,
+              max: 100
+            }
+          }]
+        }
+      });
+    }
   }
 });
 
@@ -258,6 +258,26 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -270,7 +290,12 @@ __webpack_require__.r(__webpack_exports__);
       categories: [1],
       // categoriesのデフォルト値を設定します。ここでは[1]配列の1とします。
       information: [],
-      category: []
+      category: [],
+      rankingAlldata: {},
+      week: {},
+      month: {},
+      total: {},
+      rankingType: "1"
     };
   },
   mounted: function mounted() {
@@ -282,11 +307,82 @@ __webpack_require__.r(__webpack_exports__);
     this.$http.get("/api/information").then(function (response) {
       _this.information = response.data;
     });
+    this.$http.get("/api/ranking").then(function (response) {
+      _this.rankingAlldata = response.data;
+
+      _this.setRanking();
+    });
+    var referrer = document.referrer;
+
+    if (referrer.indexOf("/login") !== -1) {
+      this.displayNotification("ログインしました", "info");
+      this.resetReferrer();
+    } else if (referrer.indexOf("/register") !== -1) {
+      this.displayNotification("会員登録しました", "success");
+      this.resetReferrer();
+    }
   },
   methods: {
+    checkAll: function checkAll() {
+      var val = [];
+      this.category.forEach(function (element) {
+        val.push(element.id);
+      });
+      this.categories = val;
+    },
+    checkAllOff: function checkAllOff() {
+      this.categories = [];
+    },
     goQuiz: function goQuiz() {
       // @click.stop.preventで設定したgoQuiz()をここで定義します
       this.$router.push("/quiz?categories=" + this.categories); // this.$router.pushを使うことで、画面リロードすることなくURLを変更できます。
+    },
+    setRanking: function setRanking() {
+      var _this2 = this;
+
+      this.week = Object.assign({}, this.week, {
+        labels: this.rankingAlldata.weekRankingData.name,
+        datasets: [{
+          label: ["最高得点率"],
+          backgroundColor: "rgba(0, 170, 248, 0.47)",
+          data: this.rankingAlldata.weekRankingData.percentage_correct_answer
+        }]
+      });
+      this.month = Object.assign({}, this.month, {
+        labels: this.rankingAlldata.monthRankingData.name,
+        datasets: [{
+          label: ["最高得点率"],
+          backgroundColor: "rgba(0, 170, 248, 0.47)",
+          data: this.rankingAlldata.monthRankingData.percentage_correct_answer
+        }]
+      });
+      this.total = Object.assign({}, this.total, {
+        labels: this.rankingAlldata.totalRankingData.name,
+        datasets: [{
+          label: ["最高得点率"],
+          backgroundColor: "rgba(0, 170, 248, 0.47)",
+          data: this.rankingAlldata.totalRankingData.percentage_correct_answer
+        }]
+      });
+      this.$nextTick(function () {
+        _this2.$refs.totalChart.renderBarChart();
+
+        _this2.$refs.monthChart.renderBarChart();
+
+        _this2.$refs.weekChart.renderBarChart();
+      });
+    },
+    resetReferrer: function resetReferrer() {
+      Object.defineProperty(document, "referrer", {
+        value: location.href
+      });
+    },
+    displayNotification: function displayNotification(text, type) {
+      this.$notify({
+        title: "お知らせ",
+        text: text,
+        type: type
+      });
     }
   }
 });
@@ -38837,7 +38933,7 @@ var render = function() {
                   [
                     _c("network", { attrs: { network: "twitter" } }, [
                       _c("i", { staticClass: "fab fa-twitter" }),
-                      _vm._v(" Twitter\n          ")
+                      _vm._v(" Twitter\n                    ")
                     ])
                   ],
                   1
@@ -38860,7 +38956,7 @@ var render = function() {
                   [
                     _c("network", { attrs: { network: "facebook" } }, [
                       _c("i", { staticClass: "fab fa-facebook" }),
-                      _vm._v(" Facebook\n          ")
+                      _vm._v(" Facebook\n                    ")
                     ])
                   ],
                   1
@@ -38883,7 +38979,7 @@ var render = function() {
                   [
                     _c("network", { attrs: { network: "line" } }, [
                       _c("i", { staticClass: "fab fa-line" }),
-                      _vm._v(" Line\n          ")
+                      _vm._v(" Line\n                    ")
                     ])
                   ],
                   1
@@ -38906,7 +39002,7 @@ var render = function() {
                   [
                     _c("network", { attrs: { network: "googleplus" } }, [
                       _c("i", { staticClass: "fab fa-google" }),
-                      _vm._v(" google\n          ")
+                      _vm._v(" google\n                    ")
                     ])
                   ],
                   1
@@ -38920,181 +39016,348 @@ var render = function() {
       )
     ]),
     _vm._v(" "),
-    _vm._m(0)
-  ])
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("section", { staticClass: "sidebar-keywords" }, [
+    _c("section", { staticClass: "sidebar-keywords" }, [
       _c("h3", { staticClass: "text-center sidebar-keywords-h3" }, [
         _vm._v("キーワード集")
       ]),
       _vm._v(" "),
       _c("ul", { staticClass: "sidebar-keywords__links" }, [
-        _c("li", [
-          _c("a", { attrs: { href: "/keyword?initial=A" } }, [_vm._v("Ａ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=B" } }, [_vm._v("Ｂ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=C" } }, [_vm._v("Ｃ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=D" } }, [_vm._v("Ｄ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=E" } }, [_vm._v("Ｅ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=F" } }, [_vm._v("Ｆ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=G" } }, [_vm._v("Ｇ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=H" } }, [_vm._v("Ｈ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=I" } }, [_vm._v("Ｉ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=J" } }, [_vm._v("Ｊ")])
-        ]),
+        _c(
+          "li",
+          [
+            _c("router-link", { attrs: { to: "/keyword?initial=A" } }, [
+              _vm._v("Ａ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=B" } }, [
+              _vm._v("Ｂ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=C" } }, [
+              _vm._v("Ｃ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=D" } }, [
+              _vm._v("Ｄ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=E" } }, [
+              _vm._v("Ｅ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=F" } }, [
+              _vm._v("Ｆ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=G" } }, [
+              _vm._v("Ｇ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=H" } }, [
+              _vm._v("Ｈ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=I" } }, [
+              _vm._v("Ｉ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=J" } }, [
+              _vm._v("Ｊ")
+            ])
+          ],
+          1
+        ),
         _vm._v(" "),
-        _c("li", [
-          _c("a", { attrs: { href: "/keyword?initial=K" } }, [_vm._v("Ｋ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=L" } }, [_vm._v("Ｌ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=M" } }, [_vm._v("Ｍ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=N" } }, [_vm._v("Ｎ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=O" } }, [_vm._v("Ｏ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=P" } }, [_vm._v("Ｐ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=Q" } }, [_vm._v("Ｑ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=R" } }, [_vm._v("Ｒ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=S" } }, [_vm._v("Ｓ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=T" } }, [_vm._v("Ｔ")])
-        ]),
+        _c(
+          "li",
+          [
+            _c("router-link", { attrs: { to: "/keyword?initial=K" } }, [
+              _vm._v("Ｋ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=L" } }, [
+              _vm._v("Ｌ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=M" } }, [
+              _vm._v("Ｍ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=N" } }, [
+              _vm._v("Ｎ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=O" } }, [
+              _vm._v("Ｏ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=P" } }, [
+              _vm._v("Ｐ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=Q" } }, [
+              _vm._v("Ｑ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=R" } }, [
+              _vm._v("Ｒ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=S" } }, [
+              _vm._v("Ｓ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=T" } }, [
+              _vm._v("Ｔ")
+            ])
+          ],
+          1
+        ),
         _vm._v(" "),
-        _c("li", [
-          _c("a", { attrs: { href: "/keyword?initial=U" } }, [_vm._v("Ｕ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=V" } }, [_vm._v("Ｖ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=W" } }, [_vm._v("Ｗ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=X" } }, [_vm._v("Ｘ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=Y" } }, [_vm._v("Ｙ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=Z" } }, [_vm._v("Ｚ")])
-        ]),
+        _c(
+          "li",
+          [
+            _c("router-link", { attrs: { to: "/keyword?initial=U" } }, [
+              _vm._v("Ｕ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=V" } }, [
+              _vm._v("Ｖ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=W" } }, [
+              _vm._v("Ｗ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=X" } }, [
+              _vm._v("Ｘ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=Y" } }, [
+              _vm._v("Ｙ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=Z" } }, [
+              _vm._v("Ｚ")
+            ])
+          ],
+          1
+        ),
         _vm._v(" "),
-        _c("li", [
-          _c("a", { attrs: { href: "/keyword?initial=あ" } }, [_vm._v("あ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=い" } }, [_vm._v("い")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=う" } }, [_vm._v("う")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=え" } }, [_vm._v("え")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=お" } }, [_vm._v("お")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=か" } }, [_vm._v("か")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=き" } }, [_vm._v("き")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=く" } }, [_vm._v("く")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=け" } }, [_vm._v("け")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=こ" } }, [_vm._v("こ")])
-        ]),
+        _c(
+          "li",
+          [
+            _c("router-link", { attrs: { to: "/keyword?initial=あ" } }, [
+              _vm._v("あ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=い" } }, [
+              _vm._v("い")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=う" } }, [
+              _vm._v("う")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=え" } }, [
+              _vm._v("え")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=お" } }, [
+              _vm._v("お")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=か" } }, [
+              _vm._v("か")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=き" } }, [
+              _vm._v("き")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=く" } }, [
+              _vm._v("く")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=け" } }, [
+              _vm._v("け")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=こ" } }, [
+              _vm._v("こ")
+            ])
+          ],
+          1
+        ),
         _vm._v(" "),
-        _c("li", [
-          _c("a", { attrs: { href: "/keyword?initial=さ" } }, [_vm._v("さ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=し" } }, [_vm._v("し")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=す" } }, [_vm._v("す")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=せ" } }, [_vm._v("せ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=そ" } }, [_vm._v("そ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=た" } }, [_vm._v("た")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=ち" } }, [_vm._v("ち")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=つ" } }, [_vm._v("つ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=て" } }, [_vm._v("て")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=と" } }, [_vm._v("と")])
-        ]),
+        _c(
+          "li",
+          [
+            _c("router-link", { attrs: { to: "/keyword?initial=さ" } }, [
+              _vm._v("さ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=し" } }, [
+              _vm._v("し")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=す" } }, [
+              _vm._v("す")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=せ" } }, [
+              _vm._v("せ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=そ" } }, [
+              _vm._v("そ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=た" } }, [
+              _vm._v("た")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=ち" } }, [
+              _vm._v("ち")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=つ" } }, [
+              _vm._v("つ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=て" } }, [
+              _vm._v("て")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=と" } }, [
+              _vm._v("と")
+            ])
+          ],
+          1
+        ),
         _vm._v(" "),
-        _c("li", [
-          _c("a", { attrs: { href: "/keyword?initial=な" } }, [_vm._v("な")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=に" } }, [_vm._v("に")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=ぬ" } }, [_vm._v("ぬ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=ね" } }, [_vm._v("ね")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=の" } }, [_vm._v("の")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=は" } }, [_vm._v("は")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=ひ" } }, [_vm._v("ひ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=ふ" } }, [_vm._v("ふ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=へ" } }, [_vm._v("へ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=ほ" } }, [_vm._v("ほ")])
-        ]),
+        _c(
+          "li",
+          [
+            _c("router-link", { attrs: { to: "/keyword?initial=な" } }, [
+              _vm._v("な")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=に" } }, [
+              _vm._v("に")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=ぬ" } }, [
+              _vm._v("ぬ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=ね" } }, [
+              _vm._v("ね")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=の" } }, [
+              _vm._v("の")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=は" } }, [
+              _vm._v("は")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=ひ" } }, [
+              _vm._v("ひ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=ふ" } }, [
+              _vm._v("ふ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=へ" } }, [
+              _vm._v("へ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=ほ" } }, [
+              _vm._v("ほ")
+            ])
+          ],
+          1
+        ),
         _vm._v(" "),
-        _c("li", [
-          _c("a", { attrs: { href: "/keyword?initial=ま" } }, [_vm._v("ま")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=み" } }, [_vm._v("み")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=む" } }, [_vm._v("む")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=め" } }, [_vm._v("め")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=も" } }, [_vm._v("も")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=ら" } }, [_vm._v("ら")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=り" } }, [_vm._v("り")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=る" } }, [_vm._v("る")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=れ" } }, [_vm._v("れ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=ろ" } }, [_vm._v("ろ")])
-        ]),
+        _c(
+          "li",
+          [
+            _c("router-link", { attrs: { to: "/keyword?initial=ま" } }, [
+              _vm._v("ま")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=み" } }, [
+              _vm._v("み")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=む" } }, [
+              _vm._v("む")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=め" } }, [
+              _vm._v("め")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=も" } }, [
+              _vm._v("も")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=ら" } }, [
+              _vm._v("ら")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=り" } }, [
+              _vm._v("り")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=る" } }, [
+              _vm._v("る")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=れ" } }, [
+              _vm._v("れ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=ろ" } }, [
+              _vm._v("ろ")
+            ])
+          ],
+          1
+        ),
         _vm._v(" "),
-        _c("li", [
-          _c("a", { attrs: { href: "/keyword?initial=や" } }, [_vm._v("や")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=ゆ" } }, [_vm._v("ゆ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=よ" } }, [_vm._v("よ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=わ" } }, [_vm._v("わ")]),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "/keyword?initial=を" } }, [_vm._v("を")])
-        ])
+        _c(
+          "li",
+          [
+            _c("router-link", { attrs: { to: "/keyword?initial=や" } }, [
+              _vm._v("や")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=ゆ" } }, [
+              _vm._v("ゆ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=よ" } }, [
+              _vm._v("よ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=わ" } }, [
+              _vm._v("わ")
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/keyword?initial=を" } }, [
+              _vm._v("を")
+            ])
+          ],
+          1
+        )
       ])
     ])
-  }
-]
+  ])
+}
+var staticRenderFns = []
 render._withStripped = true
 
 
@@ -39117,130 +39380,296 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c("main", [
-      _c(
-        "div",
-        { staticClass: "container" },
-        [
-          _c("article", { staticClass: "col-md-8 col-xs-12" }, [
-            _vm._m(0),
-            _vm._v(" "),
-            _c("section", { staticClass: "home-quiz__setting" }, [
-              _vm._m(1),
+    _c(
+      "main",
+      [
+        _c(
+          "div",
+          { staticClass: "container" },
+          [
+            _c("article", { staticClass: "col-md-8 col-xs-12" }, [
+              _vm._m(0),
               _vm._v(" "),
-              _c(
-                "form",
-                [
-                  _vm._l(_vm.category, function(cate, index) {
-                    return _c("label", { key: index }, [
-                      _c("input", {
-                        directives: [
-                          {
-                            name: "model",
-                            rawName: "v-model",
-                            value: _vm.categories,
-                            expression: "categories"
-                          }
-                        ],
-                        attrs: { type: "checkbox" },
-                        domProps: {
-                          value: cate.id,
-                          checked: Array.isArray(_vm.categories)
-                            ? _vm._i(_vm.categories, cate.id) > -1
-                            : _vm.categories
-                        },
-                        on: {
-                          change: function($event) {
-                            var $$a = _vm.categories,
-                              $$el = $event.target,
-                              $$c = $$el.checked ? true : false
-                            if (Array.isArray($$a)) {
-                              var $$v = cate.id,
-                                $$i = _vm._i($$a, $$v)
-                              if ($$el.checked) {
-                                $$i < 0 && (_vm.categories = $$a.concat([$$v]))
+              _c("section", { staticClass: "home-quiz__setting" }, [
+                _vm._m(1),
+                _vm._v(" "),
+                _c(
+                  "form",
+                  [
+                    _vm._l(_vm.category, function(cate, index) {
+                      return _c("label", { key: index }, [
+                        _c("input", {
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: _vm.categories,
+                              expression: "categories"
+                            }
+                          ],
+                          attrs: { type: "checkbox" },
+                          domProps: {
+                            value: cate.id,
+                            checked: Array.isArray(_vm.categories)
+                              ? _vm._i(_vm.categories, cate.id) > -1
+                              : _vm.categories
+                          },
+                          on: {
+                            change: function($event) {
+                              var $$a = _vm.categories,
+                                $$el = $event.target,
+                                $$c = $$el.checked ? true : false
+                              if (Array.isArray($$a)) {
+                                var $$v = cate.id,
+                                  $$i = _vm._i($$a, $$v)
+                                if ($$el.checked) {
+                                  $$i < 0 &&
+                                    (_vm.categories = $$a.concat([$$v]))
+                                } else {
+                                  $$i > -1 &&
+                                    (_vm.categories = $$a
+                                      .slice(0, $$i)
+                                      .concat($$a.slice($$i + 1)))
+                                }
                               } else {
-                                $$i > -1 &&
-                                  (_vm.categories = $$a
-                                    .slice(0, $$i)
-                                    .concat($$a.slice($$i + 1)))
+                                _vm.categories = $$c
                               }
-                            } else {
-                              _vm.categories = $$c
                             }
                           }
+                        }),
+                        _vm._v(
+                          _vm._s(cate.name) + " \n                        "
+                        )
+                      ])
+                    }),
+                    _vm._v(" "),
+                    _c("div", {}, [
+                      _vm._v(
+                        "\n                            全項目チェック\n                            "
+                      ),
+                      _c(
+                        "button",
+                        {
+                          attrs: {
+                            type: "button",
+                            name: "check_all",
+                            id: "check-all",
+                            value: "1"
+                          },
+                          on: { click: _vm.checkAll }
+                        },
+                        [
+                          _vm._v(
+                            "\n                                ON\n                            "
+                          )
+                        ]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "button",
+                        {
+                          attrs: {
+                            type: "button",
+                            name: "check_all_off",
+                            id: "check-all-off",
+                            value: "1"
+                          },
+                          on: { click: _vm.checkAllOff }
+                        },
+                        [
+                          _vm._v(
+                            "\n                                OFF\n                            "
+                          )
+                        ]
+                      )
+                    ]),
+                    _vm._v(" "),
+                    _c(
+                      "button",
+                      {
+                        staticClass: "btn btn-primary",
+                        attrs: { type: "submit" },
+                        on: {
+                          click: function($event) {
+                            $event.stopPropagation()
+                            $event.preventDefault()
+                            return _vm.goQuiz()
+                          }
                         }
-                      }),
-                      _vm._v(_vm._s(cate.name) + " \n                        ")
-                    ])
-                  }),
-                  _vm._v(" "),
-                  _vm._m(2),
-                  _vm._v(" "),
-                  _c(
-                    "button",
-                    {
-                      staticClass: "btn btn-primary",
-                      attrs: { type: "submit" },
+                      },
+                      [
+                        _vm._v(
+                          "\n                            出題開始\n                        "
+                        )
+                      ]
+                    ),
+                    _vm._v(" "),
+                    _c("input", {
+                      attrs: { type: "hidden", name: "_token", value: "" }
+                    })
+                  ],
+                  2
+                )
+              ]),
+              _vm._v(" "),
+              _c("section", { staticClass: "home-quiz__ranking" }, [
+                _vm._m(2),
+                _vm._v(" "),
+                _c("div", [
+                  _c("label", [
+                    _c("input", {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.rankingType,
+                          expression: "rankingType"
+                        }
+                      ],
+                      staticClass: "ranking-radio",
+                      attrs: {
+                        type: "radio",
+                        name: "ranking-radio",
+                        value: "1",
+                        checked: ""
+                      },
+                      domProps: { checked: _vm._q(_vm.rankingType, "1") },
                       on: {
-                        click: function($event) {
-                          $event.stopPropagation()
-                          $event.preventDefault()
-                          return _vm.goQuiz()
+                        change: function($event) {
+                          _vm.rankingType = "1"
                         }
                       }
-                    },
-                    [
-                      _vm._v(
-                        "\n                            出題開始\n                        "
-                      )
-                    ]
-                  ),
+                    }),
+                    _vm._v("総合\n                        ")
+                  ]),
                   _vm._v(" "),
-                  _c("input", {
-                    attrs: { type: "hidden", name: "_token", value: "" }
+                  _c("label", [
+                    _c("input", {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.rankingType,
+                          expression: "rankingType"
+                        }
+                      ],
+                      staticClass: "ranking-radio",
+                      attrs: {
+                        type: "radio",
+                        name: "ranking-radio",
+                        value: "2"
+                      },
+                      domProps: { checked: _vm._q(_vm.rankingType, "2") },
+                      on: {
+                        change: function($event) {
+                          _vm.rankingType = "2"
+                        }
+                      }
+                    }),
+                    _vm._v("今月\n                        ")
+                  ]),
+                  _vm._v(" "),
+                  _c("label", [
+                    _c("input", {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.rankingType,
+                          expression: "rankingType"
+                        }
+                      ],
+                      staticClass: "ranking-radio",
+                      attrs: {
+                        type: "radio",
+                        name: "ranking-radio",
+                        value: "3"
+                      },
+                      domProps: { checked: _vm._q(_vm.rankingType, "3") },
+                      on: {
+                        change: function($event) {
+                          _vm.rankingType = "3"
+                        }
+                      }
+                    }),
+                    _vm._v("今週\n                        ")
+                  ])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "home_quiz__ranking-chart" },
+                  [
+                    _c("bar-chart", {
+                      directives: [
+                        {
+                          name: "show",
+                          rawName: "v-show",
+                          value: _vm.rankingType === "1",
+                          expression: "rankingType === '1'"
+                        }
+                      ],
+                      ref: "totalChart",
+                      attrs: { chartData: _vm.total }
+                    }),
+                    _vm._v(" "),
+                    _c("bar-chart", {
+                      directives: [
+                        {
+                          name: "show",
+                          rawName: "v-show",
+                          value: _vm.rankingType === "2",
+                          expression: "rankingType === '2'"
+                        }
+                      ],
+                      ref: "monthChart",
+                      attrs: { chartData: _vm.month }
+                    }),
+                    _vm._v(" "),
+                    _c("bar-chart", {
+                      directives: [
+                        {
+                          name: "show",
+                          rawName: "v-show",
+                          value: _vm.rankingType === "3",
+                          expression: "rankingType === '3'"
+                        }
+                      ],
+                      ref: "weekChart",
+                      attrs: { chartData: _vm.week }
+                    })
+                  ],
+                  1
+                )
+              ]),
+              _vm._v(" "),
+              _c(
+                "section",
+                { staticClass: "home__notice" },
+                [
+                  _vm._m(3),
+                  _vm._v(" "),
+                  _vm._l(_vm.information, function(info, index) {
+                    return _c("dl", { key: index }, [
+                      _c("dt", [_vm._v(_vm._s(info.created_at))]),
+                      _vm._v(" "),
+                      _c("dd", [_vm._v(_vm._s(info.information))])
+                    ])
                   })
                 ],
                 2
               )
             ]),
             _vm._v(" "),
-            _c("section", { staticClass: "home-quiz__ranking" }, [
-              _vm._m(3),
-              _vm._v(" "),
-              _vm._m(4),
-              _vm._v(" "),
-              _c(
-                "div",
-                { staticClass: "home_quiz__ranking-chart" },
-                [_c("bar-chart")],
-                1
-              )
-            ]),
-            _vm._v(" "),
-            _c(
-              "section",
-              { staticClass: "home__notice" },
-              [
-                _vm._m(5),
-                _vm._v(" "),
-                _vm._l(_vm.information, function(info, index) {
-                  return _c("dl", { key: index }, [
-                    _c("dt", [_vm._v(_vm._s(info.created_at))]),
-                    _vm._v(" "),
-                    _c("dd", [_vm._v(_vm._s(info.information))])
-                  ])
-                })
-              ],
-              2
-            )
-          ]),
-          _vm._v(" "),
-          _c("the-sidebar")
-        ],
-        1
-      )
-    ])
+            _c("the-sidebar")
+          ],
+          1
+        ),
+        _vm._v(" "),
+        _c("notifications")
+      ],
+      1
+    )
   ])
 }
 var staticRenderFns = [
@@ -39286,90 +39715,12 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", {}, [
-      _vm._v(
-        "\n                            全項目チェック\n                            "
-      ),
-      _c(
-        "button",
-        {
-          attrs: {
-            type: "button",
-            name: "check_all",
-            id: "check-all",
-            value: "1"
-          }
-        },
-        [
-          _vm._v(
-            "\n                                ON\n                            "
-          )
-        ]
-      ),
-      _vm._v(" "),
-      _c(
-        "button",
-        {
-          attrs: {
-            type: "button",
-            name: "check_all_off",
-            id: "check-all-off",
-            value: "1"
-          }
-        },
-        [
-          _vm._v(
-            "\n                                OFF\n                            "
-          )
-        ]
-      )
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
     return _c("h2", { staticClass: "home-quiz__ranking-h2" }, [
       _c("img", {
         staticClass: "home-quiz__ranking-h2-logo",
         attrs: { src: "/images/graph-icon.png" }
       }),
       _vm._v("ランキング\n                    ")
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", [
-      _c("label", [
-        _c("input", {
-          staticClass: "ranking-radio",
-          attrs: {
-            type: "radio",
-            name: "ranking-radio",
-            value: "1",
-            checked: ""
-          }
-        }),
-        _vm._v("総合\n                        ")
-      ]),
-      _vm._v(" "),
-      _c("label", [
-        _c("input", {
-          staticClass: "ranking-radio",
-          attrs: { type: "radio", name: "ranking-radio", value: "2" }
-        }),
-        _vm._v("今月\n                        ")
-      ]),
-      _vm._v(" "),
-      _c("label", [
-        _c("input", {
-          staticClass: "ranking-radio",
-          attrs: { type: "radio", name: "ranking-radio", value: "3" }
-        }),
-        _vm._v("今週\n                        ")
-      ])
     ])
   },
   function() {

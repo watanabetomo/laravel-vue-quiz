@@ -1,25 +1,28 @@
 <template>
-  <div>
-    <the-header />
-      <router-view :errors="errors"/>
-    <the-footer />
-  </div>
+    <div>
+        <the-header :auth="auth" />
+        <router-view :errors="errors" />
+        <the-footer />
+    </div>
 </template>
 
 <script>
-import TheHeader from '../layout/TheHeader'
-import TheFooter from '../layout/TheFooter'
+import TheHeader from "../layout/TheHeader";
+import TheFooter from "../layout/TheFooter";
 
 export default {
-  name: 'app',
-  components : {
-    TheHeader,
-    TheFooter
-  },
-  props: {
-    errors: {
-      type: Object | Array
+    name: "app",
+    components: {
+        TheHeader,
+        TheFooter
+    },
+    props: {
+        auth: {
+            type: Object | Array
+        },
+        errors: {
+            type: Object | Array
+        }
     }
-  }
-}
+};
 </script>
